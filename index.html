@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Contador de Dias — até 29/11/2025</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#7dd3fc;--muted:#9aa4b2}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;color:whitesmoke;background:linear-gradient(180deg,#071023 0%, #0b1220 100%)}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:36px;border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.6);width:min(720px,92vw);text-align:center}
+    h1{margin:0 0 8px;font-size:20px;font-weight:600;color:var(--accent)}
+    p.lead{margin:0 0 22px;color:var(--muted)}
+    .big{font-size:84px;font-weight:800;line-height:1;margin:12px 0}
+    .small{font-size:14px;color:var(--muted);margin-top:8px}
+    .meta{display:flex;gap:12px;justify-content:center;margin-top:18px}
+    .meta div{padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
+    .positive{color:#86efac}
+    .expired{color:#fca5a5}
+    @media (max-width:520px){.big{font-size:44px}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Contador de dias</h1>
+    <p class="lead">Contagem do dia atual até <strong>29/11/2025</strong></p>
+
+    <div id="counter" aria-live="polite">
+      <div class="big" id="days">--</div>
+      <div class="small" id="label">dias restantes</div>
+    </div>
+
+    <div class="meta" aria-hidden>
+      <div>Data alvo: <strong>29/11/2025</strong></div>
+      <div id="todayBox">Hoje: —</div>
+    </div>
+
+    <footer id="updated">Atualizado agora</footer>
+  </div>
+
+  <script>
+    // Calcula diferença em dias entre a data atual (meia-noite local) e 29/11/2025
+    const targetYear = 2025, targetMonth = 10, targetDay = 29; // month: 0=jan, 10=nov
+    const msPerDay = 24*60*60*1000;
+
+    function calcDaysInclusive(now = new Date()){
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const targetMidnight = new Date(targetYear, targetMonth, targetDay);
+      const diff = Math.floor((targetMidnight - todayMidnight) / msPerDay)  // contagem exclusiva (não conta o dia atual)
+      return diff;
+    }
+
+    function formatDateBR(d){
+      return d.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'});
+    }
+
+    function update(){
+      const now = new Date();
+      const days = calcDaysInclusive(now);
+      const daysEl = document.getElementById('days');
+      const label = document.getElementById('label');
+      const todayBox = document.getElementById('todayBox');
+      const updated = document.getElementById('updated');
+
+      todayBox.textContent = 'Hoje: ' + formatDateBR(now);
+
+      if(days > 1){
+        daysEl.textContent = days.toLocaleString('pt-BR');
+        daysEl.className = 'big positive';
+        label.textContent = 'dias restantes (dias restantes)';
+      } else if(days === 1){
+        daysEl.textContent = '1';
+        daysEl.className = 'big positive';
+        label.textContent = 'dia restante — é hoje (29/11/2025)';
+      } else if(days === 0){
+        daysEl.textContent = '0';
+        daysEl.className = 'big expired';
+        label.textContent = 'a data já passou';
+      } else { // dias negativos
+        daysEl.textContent = Math.abs(days).toLocaleString('pt-BR');
+        daysEl.className = 'big expired';
+        label.textContent = 'dias desde que a data passou';
+      }
+
+      updated.textContent = 'Última atualização: ' + now.toLocaleString('pt-BR');
+    }
+
+    // Atualiza imediatamente e depois a cada 30 segundos
+    update();
+    setInterval(update, 30_000);
+  </script>
+</body>
+</html>
